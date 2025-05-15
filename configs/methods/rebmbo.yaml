@@ -1,0 +1,195 @@
+# REBMBO Methods Configuration
+# This file defines the configuration for the Reinforced Energy-Based Model 
+# for Bayesian Optimization (REBMBO) and its variants.
+
+common:
+  acquisition_type: "ebm_ucb"
+  initial_points: 5
+  exploration_weight: 0.1
+  verbose: true
+  normalize_inputs: true
+  seed: 42
+
+rebmbo_classic:
+  name: "REBMBO-C"
+  type: "rebmbo"
+  variant: "classic"
+  class: "methods.rebmbo.classic.REBMBO_Classic" 
+  
+  gp_params:
+    kernel: "matern_rbf_mix"
+    kernel_params:
+      matern_nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+    optimizer: "L-BFGS-B"
+    n_restarts_optimizer: 5
+    alpha: 1.0e-10
+  
+  ebm_params:
+    hidden_layers: [64, 64]
+    learning_rate: 0.001
+    mcmc_steps: 20
+    mcmc_step_size: 0.1
+    mcmc_noise_scale: 0.01
+    lambda: 0.1
+    update_frequency: 5
+    batch_size: 32
+    epochs_per_update: 10
+    normalize_energy: true
+  
+  ppo_params:
+    hidden_layers: [128, 64]
+    actor_learning_rate: 3.0e-4
+    critic_learning_rate: 1.0e-3
+    gamma: 0.99
+    lambda_gae: 0.95
+    clip_ratio: 0.2
+    target_kl: 0.01
+    max_grad_norm: 0.5
+    update_epochs: 10
+    batch_size: 32
+    action_std_init: 0.6
+    action_std_decay_rate: 0.05
+    min_action_std: 0.1
+    state_normalize: true
+
+rebmbo_sparse:
+  name: "REBMBO-S"
+  type: "rebmbo"
+  variant: "sparse"
+  class: "methods.rebmbo.sparse.REBMBO_Sparse"   
+  
+  gp_params:
+    kernel: "matern_rbf_mix"
+    kernel_params:
+      matern_nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    inducing_points: 50
+    inducing_point_method: "kmeans"
+    normalize_y: true
+    optimization_restarts: 10
+    alpha: 1.0e-10
+  
+  ebm_params:
+    hidden_layers: [64, 64]
+    learning_rate: 0.001
+    mcmc_steps: 20
+    mcmc_step_size: 0.1
+    mcmc_noise_scale: 0.01
+    lambda: 0.1
+    update_frequency: 5
+    batch_size: 32
+    epochs_per_update: 10
+    normalize_energy: true
+  
+  ppo_params:
+    hidden_layers: [128, 64]
+    actor_learning_rate: 3.0e-4
+    critic_learning_rate: 1.0e-3
+    gamma: 0.99
+    lambda_gae: 0.95
+    clip_ratio: 0.2
+    target_kl: 0.01
+    max_grad_norm: 0.5
+    update_epochs: 10
+    batch_size: 32
+    action_std_init: 0.6
+    action_std_decay_rate: 0.05
+    min_action_std: 0.1
+    state_normalize: true
+
+rebmbo_deep:
+  name: "REBMBO-D"
+  type: "rebmbo"
+  variant: "deep"
+  class: "methods.rebmbo.deep.REBMBO_Deep" 
+  
+  gp_params:
+    kernel: "deep"
+    deep_network:
+      hidden_layers: [128, 64, 32]
+      activation: "relu"
+      dropout_rate: 0.1
+      weight_decay: 1.0e-4
+      batch_size: 64
+      epochs: 50
+      learning_rate: 0.001
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+    alpha: 1.0e-10
+  
+  ebm_params:
+    hidden_layers: [128, 64, 32]
+    learning_rate: 0.001
+    mcmc_steps: 30
+    mcmc_step_size: 0.1
+    mcmc_noise_scale: 0.01
+    lambda: 0.15
+    update_frequency: 3
+    batch_size: 64
+    epochs_per_update: 15
+    normalize_energy: true
+  
+  ppo_params:
+    hidden_layers: [256, 128, 64]
+    actor_learning_rate: 2.5e-4
+    critic_learning_rate: 8.0e-4
+    gamma: 0.99
+    lambda_gae: 0.95
+    clip_ratio: 0.15
+    target_kl: 0.008
+    max_grad_norm: 0.5
+    update_epochs: 15
+    batch_size: 64
+    action_std_init: 0.5
+    action_std_decay_rate: 0.03
+    min_action_std: 0.08
+    state_normalize: true
+
+experiments:
+  
+  rebmbo_no_ebm:
+    name: "REBMBO-NoEBM"
+    type: "rebmbo"
+    variant: "classic"
+    class: "methods.rebmbo.classic.REBMBO_Classic"
+    use_ebm: false
+    gp_params:
+      kernel: "matern_rbf_mix"
+    ppo_params:
+  
+  rebmbo_single_step:
+    name: "REBMBO-SingleStep"
+    type: "rebmbo"
+    variant: "classic"
+    class: "methods.rebmbo.classic.REBMBO_Classic"
+    use_ppo: false
+    gp_params:
+    ebm_params:
+  
+  rebmbo_high_exploration:
+    name: "REBMBO-HighExplore"
+    type: "rebmbo"
+    variant: "classic"
+    class: "methods.rebmbo.classic.REBMBO_Classic"
+    gp_params:
+    ebm_params:
+      lambda: 0.3
+    ppo_params:
+  
+  rebmbo_low_exploration:
+    name: "REBMBO-LowExplore"
+    type: "rebmbo"
+    variant: "classic"
+    class: "methods.rebmbo.classic.REBMBO_Classic"
+    gp_params:
+    ebm_params:
+      lambda: 0.05
+    ppo_params:

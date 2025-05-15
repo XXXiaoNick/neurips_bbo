@@ -1,0 +1,453 @@
+# experiments.yaml - Full unified config
+
+# =====================================================================
+# General experiment settings
+# =====================================================================
+general:
+  name: "REBMBO_Comparison_Experiments"
+  description: "Comprehensive evaluation of REBMBO and its variants against baseline methods"
+  random_seeds: [42, 43, 44, 45, 46]  # 5 different random seeds
+  verbose: true
+  save_results: true
+  output_dir:   # Output directory for results
+  log_level: "INFO"
+  parallel: true
+  max_parallel_jobs: 4
+  timeout: 86400  # 24 hours
+
+# =====================================================================
+# Benchmark selection
+# =====================================================================
+benchmarks:
+  synthetic:
+    # ---------- Low-dimensional examples ----------
+    - name: "branin_2d"
+      class: "benchmarks.synthetic.BraninBenchmark"
+      params:
+        type: "synthetic"
+        name: "Branin"
+        dim: 2
+        bounds: [[-5, 10], [0, 15]]
+        noise_std: 0.0
+        maximize: false
+        true_optimum: 0.397887
+        true_optimum_loc:
+          - [9.42478, 2.475]
+          - [-3.14159, 12.275]
+          - [3.14159, 2.275]
+        description: "Standard 2D test function with local minima"
+        formula: "f(x1,x2) = (x2 - 5.1/(4*pi^2)*x1^2 + 5/pi*x1 -6)^2 + 10(...)"
+
+    - name: "ackley_5d"
+      class: "benchmarks.synthetic.AckleyBenchmark"
+      params:
+        type: "synthetic"
+        name: "Ackley"
+        dim: 5
+        bounds: [[-32.768, 32.768], [-32.768, 32.768], [-32.768, 32.768], [-32.768, 32.768], [-32.768, 32.768]]
+        noise_std: 0.0
+        maximize: false
+        true_optimum: 0.0
+        true_optimum_loc: [0.0, 0.0, 0.0, 0.0, 0.0]
+        description: "Multimodal function with single global minimum at origin"
+        formula: "f(x) = -20*exp(...)+20+e"
+
+    - name: "rosenbrock_8d"
+      class: "benchmarks.synthetic.RosenbrockBenchmark"
+      params:
+        type: "synthetic"
+        name: "Rosenbrock"
+        dim: 8
+        bounds:
+          - [-5, 10]
+          - [-5, 10]
+          - [-5, 10]
+          - [-5, 10]
+          - [-5, 10]
+          - [-5, 10]
+          - [-5, 10]
+          - [-5, 10]
+        noise_std: 0.0
+        maximize: false
+        true_optimum: 0.0
+        true_optimum_loc: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        description: "Classic banana-shaped valley function"
+        formula: "f(x) = sum_{i=1}^{d-1}[100(x_{i+1}-x_i^2)^2 + (1-x_i)^2]"
+
+    # ---------- High-dimensional example ----------
+    - name: "hdbo_200d"
+      class: "benchmarks.synthetic.HDEXPBenchmark"
+      params:
+        type: "synthetic"
+        name: "HDBO"
+        dim: 200
+        bounds: [[-5, 5]]
+        noise_std: 0.0
+        maximize: true
+        true_optimum: 1085.0
+        true_optimum_loc: null
+        description: "High-dimensional exponential sum function"
+        formula: "f(x) = sum_{i=1}^{d} exp(x_i)"
+
+    # ---------- Noisy variants ----------
+    - name: "branin_2d_noisy"
+      class: "benchmarks.synthetic.BraninNoisyBenchmark"
+      params:
+        type: "synthetic"
+        name: "BraninNoisy"
+        dim: 2
+        bounds: [[-5, 10], [0, 15]]
+        noise_std: 0.1
+        maximize: false
+        true_optimum: 0.397887
+        description: "Noisy version of Branin"
+        formula: "f(x1,x2)=..."
+
+    - name: "ackley_5d_noisy"
+      class: "benchmarks.synthetic.AckleyNoisyBenchmark"
+      params:
+        type: "synthetic"
+        name: "AckleyNoisy"
+        dim: 5
+        bounds: [[-32.768, 32.768], [-32.768, 32.768], [-32.768, 32.768], [-32.768, 32.768], [-32.768, 32.768]]
+        noise_std: 0.2
+        maximize: false
+        true_optimum: 0.0
+        description: "Noisy version of Ackley"
+        formula: "f(x)=..."
+
+  real_world:
+    - name: "nanophotonic_3d"
+      class: "benchmarks.real_world.NanophotonicBenchmark"
+      params:
+        type: "real_world"
+        name: "Nanophotonic"
+        dim: 3
+        bounds: [[10, 500], [1.2, 2.5], [0, 10]]
+        noise_std: 0.01
+        maximize: true
+        simulator_path: "./simulators/nanophotonic_simulator.py"
+        cache_results: true
+        description: "Optimizes the design of layered optical structures"
+        max_evals: 100
+        parameters:
+          wavelength_range: [400, 800]
+          incident_angle: 0
+          polarization: "TE"
+          material_library: ["SiO2","TiO2","Si3N4"]
+          references:
+            - "Song et al. (2018): ..."
+    
+    - name: "rosetta_86d"
+      class: "benchmarks.real_world.RosettaProteinBenchmark"
+      params:
+        type: "real_world"
+        name: "RosettaProtein"
+        dim: 86
+        bounds: [[-5, 5]]
+        noise_std: 0.0
+        maximize: false
+        simulator_path: "./simulators/rosetta_flex_ddg.py"
+        cache_results: true
+        description: "Optimizes protein binding affinity"
+        max_evals: 150
+        parameters:
+          target_protein: "SARS-CoV-2-Spike"
+          scoring_function: "ref2015"
+          relax_iterations: 5
+          interface_cutoff: 8.0
+          packing_radius: 10.0
+        references:
+          - "Barlow et al. (2018)"
+
+    - name: "nats_bench_4d"
+      class: "benchmarks.real_world.NATSBenchBenchmark"
+      params:
+        type: "real_world"
+        name: "NATSBench"
+        dim: 4
+        bounds: [[0,1],[0,1],[0,1],[0,1]]
+        noise_std: 0.0
+        maximize: true
+        simulator_path: "./simulators/nats_bench_api.py"
+        cache_results: true
+        description: "Neural arch search"
+        max_evals: 50
+        parameters:
+          dataset: "cifar10"
+          metric: "accuracy"
+          epochs: 200
+          api_path: "./data/NATS-tss-v1_0-3ffb9.pth"
+        references:
+          - "Dong et al. (2021)"
+
+    - name: "robot_trajectory_6d"
+      class: "benchmarks.real_world.RobotTrajectoryBenchmark"
+      params:
+        type: "real_world"
+        name: "RobotTrajectory"
+        dim: 6
+        bounds: [[-1,1],[-1,1],[-1,1],[-1,1],[-1,1],[-1,1]]
+        noise_std: 0.05
+        maximize: true
+        simulator_path: "./simulators/robot_simulator.py"
+        cache_results: false
+        description: "Optimizes robot arm trajectory"
+        max_evals: 80
+        parameters:
+          robot_model: "6DOF-Manipulator"
+          obstacle_configuration: "standard"
+        references:
+          - "Schulman et al. (2017)"
+
+    - name: "xgboost_hpo_5d"
+      class: "benchmarks.real_world.XGBoostHPOBenchmark"
+      params:
+        type: "real_world"
+        name: "XGBoostHPO"
+        dim: 5
+        bounds: [[1,15],[0.01,0.3],[3,20],[0.5,1.0],[0.01,0.2]]
+        noise_std: 0.01
+        maximize: true
+        simulator_path: "./simulators/xgboost_cv.py"
+        cache_results: true
+        description: "Hyperparam optimization for XGBoost"
+        max_evals: 70
+        parameters:
+          dataset: "adult"
+          n_folds: 5
+          metric: "accuracy"
+          early_stopping: true
+          timeout: 120
+        references:
+          - "Bergstra et al. (2011)"
+
+# =====================================================================
+# Method selection (simplified with explicit 'class')
+# =====================================================================
+methods:
+  rebmbo:
+    - name: "REBMBOClassic"
+      class: "methods.rebmbo.classic.REBMBOClassic"       
+      config_file: "./configs/methods/rebmbo.yaml"
+      label: "REBMBO-C"
+    
+    - name: "REBMBOSparse"
+      class: "methods.rebmbo.sparse.REBMBOSparse"
+      config_file: "./configs/methods/rebmbo.yaml"
+      label: "REBMBO-S"
+    
+    - name: "REBMBODeep"
+      class: "methods.rebmbo.deep.REBMBODeep"
+      config_file: "./configs/methods/rebmbo.yaml"
+      label: "REBMBO-D"
+
+  baselines:
+    - name: "turbo"
+      class: "methods.baselines.turbo.TuRBO"     
+      config_file: "./configs/methods/baselines.yaml"
+      label: "TuRBO"
+    
+    - name: "ballet_ici"
+      class: "methods.baselines.ballet_ici.BALLETICI"
+      config_file: "./configs/methods/baselines.yaml"
+      label: "BALLET-ICI"
+    
+    - name: "earl_bo"
+      class: "methods.baselines.earl_bo.EARLBO"
+      config_file: "./configs/methods/baselines.yaml"
+      label: "EARL-BO"
+    
+    - name: "two_step_ei"
+      class: "methods.baselines.two_step_ei.TwoStepEI"
+      config_file: "./configs/methods/baselines.yaml"
+      label: "Two-Step EI"
+    
+    - name: "kg"
+      class: "methods.baselines.kg.KnowledgeGradient"
+      config_file: "./configs/methods/baselines.yaml"
+      label: "KG"
+    
+    - name: "classic_bo"
+      class: "methods.baselines.classic_bo.ClassicBO"
+      config_file: "./configs/methods/baselines.yaml"
+      label: "Classic BO"
+
+
+# =====================================================================
+# Experiment groups
+# =====================================================================
+experiment_groups:
+  main:
+    benchmarks:
+      - "branin_2d"
+      - "ackley_5d"
+      - "rosenbrock_8d"
+      - "hdbo_200d"
+      - "nanophotonic_3d"
+      - "rosetta_86d"
+    methods:
+      - "REBMBOClassic"
+      - "REBMBOSparse"
+      - "REBMBODeep"
+      - "turbo"
+      - "ballet_ici"
+      - "earl_bo"
+      - "classic_bo"
+
+  ablation:
+    benchmarks:
+      - "branin_2d"
+      - "ackley_5d"
+      - "nanophotonic_3d"
+    methods:
+      - "REBMBOClassic"
+      - "rebmbo_no_ebm"
+      - "rebmbo_single_step"
+      - "rebmbo_high_exploration"
+      - "rebmbo_low_exploration"
+
+
+# =====================================================================
+# Evaluation metrics
+# =====================================================================
+metrics:
+  - name: "simple_regret"
+    display_name: "Simple Regret"
+    maximize: false
+    primary: true
+
+  - name: "cumulative_regret"
+    display_name: "Cumulative Regret"
+    maximize: false
+    primary: false
+  
+  - name: "best_value"
+    display_name: "Best Value"
+    maximize: true
+    primary: true
+  
+  - name: "time_per_iteration"
+    display_name: "Time per Iteration (s)"
+    maximize: false
+    primary: false
+  
+  - name: "memory_usage"
+    display_name: "Peak Memory Usage (MB)"
+    maximize: false
+    primary: false
+
+  - name: "iterations_to_threshold"
+    display_name: "Iterations to Threshold"
+    thresholds: [0.01, 0.05, 0.1]
+    maximize: false
+    primary: true
+
+  - name: "auc_regret"
+    display_name: "AUC Regret"
+    maximize: false
+    primary: false
+  
+  - name: "efficiency_score"
+    display_name: "Efficiency Score"
+    formula: "best_value / (time_per_iteration * n_iterations)"
+    maximize: true
+    primary: false
+
+
+# =====================================================================
+# Visualization settings
+# =====================================================================
+visualization:
+  regret_curves:
+    enabled: true
+    plot_type: "line"
+    log_y: true
+    show_confidence: true
+    confidence_level: 0.95
+    save_format: ["png", "pdf"]
+  
+  performance_profiles:
+    enabled: true
+    log_x: true
+    save_format: ["png", "pdf"]
+  
+  pairwise_matrices:
+    enabled: true
+    metrics: ["simple_regret", "iterations_to_threshold"]
+    save_format: ["png", "pdf"]
+  
+  ranking_tables:
+    enabled: true
+    metrics: ["simple_regret", "best_value", "iterations_to_threshold"]
+    save_format: ["tex", "csv"]
+  
+  box_plots:
+    enabled: true
+    metrics: ["simple_regret", "best_value"]
+    save_format: ["png", "pdf"]
+
+
+# =====================================================================
+# Results analysis
+# =====================================================================
+analysis:
+  significance_tests:
+    friedman_test: true
+    nemenyi_test: true
+    wilcoxon_test: true
+    significance_level: 0.05
+  
+  convergence_analysis:
+    enabled: true
+    fit_power_law: true
+    compare_convergence_rates: true
+  
+  resource_analysis:
+    enabled: true
+    compare_memory_usage: true
+    compare_time_efficiency: true
+  
+  report:
+    enabled: true
+    formats: ["html", "pdf", "tex"]
+    include_tables: true
+    include_plots: true
+    include_statistics: true
+
+# =====================================================================
+# Hardware resource allocation
+# =====================================================================
+resources:
+  cpu:
+    max_threads: 8
+    thread_affinity: true
+  
+  gpu:
+    enabled: true
+    devices: [0]
+    memory_limit: 4096
+  
+  memory:
+    max_memory: 16384
+    monitor_interval: 1.0
+
+# =====================================================================
+# Output directory structure
+# =====================================================================
+output:
+  structure:
+    raw: "raw"
+    processed: "processed"
+    visualizations: "figures"
+    tables: "tables"
+    logs: "logs"
+    reports: "reports"
+  
+  save:
+    format: "json"
+    compress: true
+    save_interval: 10
+    full_history: true
+    checkpoint: true
+    checkpoint_interval: 30

@@ -1,0 +1,255 @@
+common:
+  initial_points: 5  # Number of initial random points before starting optimization
+  verbose: true      # Print detailed progress
+  normalize_inputs: true
+  seed: 42           # Random seed for reproducibility
+
+turbo:
+  name: "TuRBO"
+  type: "baseline"
+  class: "methods.baselines.turbo.TuRBOOptimizer" 
+  
+  # Trust region parameters
+  trust_region_params:
+    length_init: 0.8
+    length_min: 0.5e-4
+    length_max: 1.0
+    success_tolerance: 3
+    failure_tolerance: 3
+    success_factor: 1.5
+    failure_factor: 0.5
+    restart_strategy: "random"
+  
+  # GP parameters
+  gp_params:
+    kernel: "matern"
+    kernel_params:
+      nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+    optimizer: "L-BFGS-B"
+    n_restarts_optimizer: 5
+  
+  # Acquisition function parameters
+  acquisition_params:
+    type: "ei"
+    xi: 0.01
+    optimizer: "L-BFGS-B"
+    n_restarts: 10
+    acq_optimizer_kwargs:
+      samples: 1000
+      maxiter: 200
+
+ballet_ici:
+  name: "BALLET-ICI"
+  type: "baseline"
+  class: "methods.baselines.ballet_ici.BalletICIOptimizer"  
+  
+  # Global GP parameters
+  global_gp_params:
+    kernel: "rbf"
+    kernel_params:
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 5
+  
+  # Local GP parameters
+  local_gp_params:
+    kernel: "matern"
+    kernel_params:
+      nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 5
+  
+  # ROI (Region of Interest) parameters
+  roi_params:
+    threshold_method: "quantile"
+    threshold_quantile: 0.9
+    n_samples: 10000
+    min_roi_points: 5
+    inheritance_factor: 0.8
+  
+  # Acquisition function parameters
+  acquisition_params:
+    type: "ucb_lcb_diff"
+    kappa: 2.0
+    optimizer: "L-BFGS-B"
+    n_restarts: 10
+    acq_optimizer_kwargs:
+      samples: 1000
+      maxiter: 200
+
+earl_bo:
+  name: "EARL-BO"
+  type: "baseline"
+  class: "methods.baselines.earl_bo.EARLBOOptimizer" 
+  
+  # GP parameters
+  gp_params:
+    kernel: "rbf_white"
+    kernel_params:
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+  
+  # RL parameters
+  rl_params:
+    state_dim: 3
+    hidden_layers: [64, 32]
+    learning_rate: 1.0e-3
+    gamma: 0.99
+    epsilon_start: 1.0
+    epsilon_end: 0.1
+    epsilon_decay: 200
+    update_frequency: 1
+    batch_size: 32
+    memory_size: 10000
+    target_update: 10
+    double_dqn: true
+    dueling_dqn: true
+    lookahead: 1
+
+two_step_ei:
+  name: "Two-Step EI"
+  type: "baseline"
+  class: "methods.baselines.two_step_ei.TwoStepEIOptimizer"  
+  
+  gp_params:
+    kernel: "matern"
+    kernel_params:
+      nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+  
+  acquisition_params:
+    type: "two_step_ei"
+    xi: 0.01
+    mc_samples: 100
+    inner_optimizer: "L-BFGS-B"
+    inner_n_restarts: 5
+    outer_optimizer: "L-BFGS-B"
+    outer_n_restarts: 10
+    acq_optimizer_kwargs:
+      samples: 1000
+      maxiter: 200
+
+kg:
+  name: "Knowledge Gradient"
+  type: "baseline"
+  class: "methods.baselines.kg.KnowledgeGradientOptimizer" 
+  
+  gp_params:
+    kernel: "matern"
+    kernel_params:
+      nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+  
+  acquisition_params:
+    type: "kg"
+    mc_samples: 100
+    inner_samples: 10
+    optimizer: "L-BFGS-B"
+    n_restarts: 10
+    acq_optimizer_kwargs:
+      samples: 1000
+      maxiter: 200
+
+classic_bo:
+  name: "Classic BO"
+  type: "baseline"
+  class: "methods.baselines.classic_bo.BayesianOptimizer"  
+  
+  gp_params:
+    kernel: "matern"
+    kernel_params:
+      nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+  
+  acquisition_params:
+    type: "ei"
+    xi: 0.01
+    optimizer: "L-BFGS-B"
+    n_restarts: 10
+    acq_optimizer_kwargs:
+      samples: 1000
+      maxiter: 200
+
+random_search:
+  name: "Random Search"
+  type: "baseline"
+  class: "methods.base.RandomOptimizer" 
+grid_search:
+  name: "Grid Search"
+  type: "baseline"
+  class: "methods.base.GridOptimizer" 
+  grid_params:
+    resolution: 10
+
+ucb_bo:
+  name: "UCB"
+  type: "baseline"
+  class: "methods.baselines.classic_bo.BayesianOptimizer"  
+  
+  gp_params:
+    kernel: "matern"
+    kernel_params:
+      nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+  
+  acquisition_params:
+    type: "ucb"
+    kappa: 2.576
+    optimizer: "L-BFGS-B"
+    n_restarts: 10
+    acq_optimizer_kwargs:
+      samples: 1000
+      maxiter: 200
+
+pi_bo:
+  name: "PI"
+  type: "baseline"
+  class: "methods.baselines.classic_bo.BayesianOptimizer" 
+  
+  gp_params:
+    kernel: "matern"
+    kernel_params:
+      nu: 2.5
+      length_scale_bounds: [1e-5, 1e5]
+      output_scale_bounds: [1e-5, 1e5]
+    noise_variance: 1.0e-6
+    normalize_y: true
+    optimization_restarts: 10
+  
+  acquisition_params:
+    type: "pi"
+    xi: 0.01
+    optimizer: "L-BFGS-B"
+    n_restarts: 10
+    acq_optimizer_kwargs:
+      samples: 1000
+      maxiter: 200
